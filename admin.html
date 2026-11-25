@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>لوحة تحكم حكايتنا</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&family=Tajawal:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="bgl" id="bgl" aria-hidden="true"></div>
+<div id="app"></div>
+<div id="fx" aria-hidden="true"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<script src="common.js"></script>
+<script>
+var D,tab="photos",root=$("app");
+var TABS=[["photos","📸 صور"],["videos","🎬 فيديوهات"],["songs","🎵 أغاني"],["msgs","💌 رسائل"],["locked","🔒 مقفولة"],["set","⚙️ إعدادات"]];
+var KIND={photos:"photo",videos:"video",songs:"song"};
+fx();
+if(!ready)needSetup();else sb.auth.getSession().then(function(r){var u=r.data.session&&r.data.session.user;if(u&&u.email===CFG.adminEmail)enter();else login()});
+
+function login(){
+  root.innerHTML='<div class="center"><div class="box"><div class="em">🔐</div><h2>لوحة التحكم</h2><p class="lead">دخول الأدمن</p><input id="em" type="email" placeholder="الإيميل" value="'+esc(CFG.adminEmail)+'" aria-label="الإيميل"><input id="ap" type="password" placeholder="كلمة السر" aria-label="كلمة السر"><button class="btn" id="ab">دخول</button><div class="err" id="ae"></div></div></div>';
+  async function go(){var r=await sb.auth.signInWithPassword({email:$("em").value.trim(),password:$("ap").value});
+    if(r.error||r.data.user.email!==CFG.adminEmail){$("ae").textContent="بيانات الدخول غلط";if(!r.error)sb.auth.signOut();return}enter()}
+  $("ab").onclick=go;$("ap").onkeydown=function(e){if(e.key==="Enter")go()};$("ap").focus()}
+
+async function enter(){
+  root.innerHTML='<div class="wrap"><h2>لوحة تحكم حكايتنا</h2><p class="lead">أي حاجة تضيفها هنا بتظهر في الموقع لوحدها فوراً.</p><div class="tabs">'+TABS.map(function(t){return'<button data-t="'+t[0]+'">'+t[1]+'</button>'}).join("")+'<button id="site">👁 الموقع</button><button id="out">خروج</button></div><div id="pn"></div></div>';
+  document.querySelectorAll(".tabs [data-t]").forEach(function(b){b.onclick=function(){tab=b.dataset.t;panel()}});
+  $("site").onclick=function(){window.open("index.html","_blank")};
+  $("out").onclick=async function(){await sb.auth.signOut();login()};
+  await reload()}
+async function reload(){try{D=await load()}catch(e){$("pn").innerHTML='<div class="panel">تعذّر التحميل. راجع إعدادات Supabase وملف setup.sql.<br><small>'+esc(e.message||e)+'</small></div>';return}panel()}
+function panel(){document.querySelectorAll(".tabs [data-t]").forEach(function(b){b.classList.toggle("on",b.dataset.t===tab)});
+  $("pn").innerHTML=({photos:pMedia,videos:pMedia,songs:pMedia,msgs:pMsgs,locked:pMsgs,set:pSet})[tab]();wire()}
+
+function pMedia(){var k=tab,acc={photos:"image/*",videos:"video/*",songs:"audio/*"}[k],lbl={photos:"صور",videos:"فيديوهات",songs:"أغاني"}[k];
+  var note=k==="photos"?"الصور بتتصغّر تلقائي عشان الموقع يفضل سريع.":k==="videos"?"الحد الأقصى للملف الواحد 50 ميجا (الباقة المجانية).":"ملفات mp3. أول أغنية بتشتغل بعد كلمة السر.";
+  return'<div class="panel"><b>إضافة '+lbl+'</b><p class="lead">'+note+'</p><input type="file" id="fi" accept="'+acc+'" multiple></div><div class="items'+(k==="songs"?" wide":"")+'">'+
+  D[k].map(function(it){var d='data-tb="items" data-id="'+it.id+'"';
+    var m=k==="photos"?'<img src="'+esc(it.url)+'" alt="">':k==="videos"?'<video controls preload="metadata" src="'+esc(it.url)+'"></video>':'<audio controls preload="none" src="'+esc(it.url)+'"></audio>';
+    var f=k==="songs"?'<input class="f" '+d+' data-c="title" value="'+esc(it.title)+'" placeholder="اسم الأغنية"><input class="f" '+d+' data-c="extra" value="'+esc(it.artist)+'" placeholder="الفنان">':'<input class="f" '+d+' data-c="title" value="'+esc(it.cap)+'" placeholder="تعليق (اختياري)">';
+    return'<div class="it">'+m+f+'<button class="btn sm ghost del" data-tb="items" data-id="'+it.id+'" data-p="'+esc(it.path)+'">🗑 حذف</button></div>'}).join("")+'</div>'}
+
+function pMsgs(){var L=tab==="locked",now=Date.now();
+  return'<div class="panel"><b>'+(L?"رسالة مقفولة جديدة":"رسالة جديدة")+'</b><label>العنوان</label><input id="mt"><label>الرسالة</label><textarea id="mx" rows="4"></textarea>'+(L?'<label>تتفتح في (بتوقيت جهازك)</label><input id="lt" type="datetime-local">':"")+'<button class="btn" id="madd">إضافة</button></div><div class="items wide">'+
+  D[tab].map(function(m){return'<div class="it">'+(L?'<span class="st">'+(m.at<=now?"🔓 مفتوحة":"🔒 مقفولة")+'</span>':"")+
+    '<input class="f" data-tb="'+(L?"locked":"items")+'" data-id="'+m.id+'" data-c="title" value="'+esc(m.title)+'"><textarea class="f" data-tb="'+(L?"locked_text":"items")+'" data-id="'+m.id+'" data-c="body" rows="3">'+esc(m.text||"")+'</textarea>'+
+    (L?'<input class="f" data-tb="locked" data-id="'+m.id+'" data-c="at" data-t="dt" type="datetime-local" value="'+toLocal(m.at)+'">':"")+
+    '<button class="btn sm ghost del" data-tb="'+(L?"locked":"items")+'" data-id="'+m.id+'">🗑 حذف</button></div>'}).join("")+'</div>'}
+
+function pSet(){var f=function(k,l,t,r){var v=k==="words"?D.words.join("\n"):D[k];return'<label>'+l+'</label>'+(r?'<textarea class="s" data-k="'+k+'" rows="'+r+'">'+esc(v)+'</textarea>':'<input class="s" data-k="'+k+'" type="'+(t||"text")+'" value="'+esc(v)+'">')};
+  return'<div class="panel">'+f("name1","اسمك")+f("name2","اسم حبيبك")+f("start","بداية الحكاية","datetime-local")+f("intro","المقدمة في الرئيسية","",3)+f("secret","الرسالة السرية (القلب 5 مرات)","",2)+f("words","كلام حلو في صفحة كلمة السر (سطر لكل جملة)","",5)+
+  '<p class="lead" style="margin-top:14px">لتغيير كلمة سر الموقع أو كلمة سر الأدمن: Supabase ← Authentication ← Users ← اختار الحساب ← Send password recovery أو Update.</p></div>'}
+
+function shrink(file){return new Promise(function(ok){var im=new Image(),u=URL.createObjectURL(file);im.onload=function(){var r=Math.min(1,1400/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*r);c.height=Math.round(im.height*r);c.getContext("2d").drawImage(im,0,0,c.width,c.height);c.toBlob(function(b){URL.revokeObjectURL(u);ok(b||file)},"image/jpeg",.82)};im.onerror=function(){ok(file)};im.src=u})}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function chk(r){if(r.error)throw r.error;return r}
+
+function wire(){var P=$("pn");
+  P.querySelectorAll(".f").forEach(function(el){el.oninput=function(){clearTimeout(el._t);el._t=setTimeout(async function(){
+    var v=el.value;if(el.dataset.t==="dt"){var d=new Date(v);if(isNaN(d))return;v=d.toISOString()}
+    var o={};o[el.dataset.c]=v;try{chk(await sb.from(el.dataset.tb).update(o).eq("id",el.dataset.id));toast("تم الحفظ ✓")}catch(e){toast("فشل الحفظ: "+(e.message||e))}},600)}});
+  P.querySelectorAll(".s").forEach(function(el){el.oninput=function(){clearTimeout(el._t);el._t=setTimeout(async function(){var k=el.dataset.k,v=el.value;
+    if(k==="words"){var arr=v.split("\n").map(function(x){return x.trim()}).filter(Boolean);D.words=arr;v=JSON.stringify(arr)}else D[k]=v;
+    try{chk(await sb.from("settings").upsert({key:k,value:v}));toast("تم الحفظ ✓")}catch(e){toast("فشل الحفظ: "+(e.message||e))}},700)}});
+  P.querySelectorAll(".del").forEach(function(b){b.onclick=async function(){if(!confirm("متأكد إنك عايز تحذف؟"))return;
+    try{if(b.dataset.p)await sb.storage.from("media").remove([b.dataset.p]);chk(await sb.from(b.dataset.tb).delete().eq("id",b.dataset.id));await reload();toast("اتحذف")}catch(e){toast("فشل الحذف: "+(e.message||e))}}});
+  var fi=$("fi");if(fi)fi.onchange=async function(){fi.disabled=true;var n=0;
+    try{for(const f of fi.files){toast("جاري رفع "+(++n)+" من "+fi.files.length+"...");var isP=tab==="photos",blob=isP?await shrink(f):f,ext=isP?"jpg":(f.name.split(".").pop()||"bin").toLowerCase().replace(/[^a-z0-9]/g,"")||"bin",path=KIND[tab]+"/"+uid()+"."+ext;
+      chk(await sb.storage.from("media").upload(path,blob,{contentType:blob.type||f.type,cacheControl:"31536000"}));
+      chk(await sb.from("items").insert({kind:KIND[tab],title:tab==="songs"?f.name.replace(/\.[^.]+$/,""):"",url:sb.storage.from("media").getPublicUrl(path).data.publicUrl,body:path}))}
+      toast("تم الرفع ✓")}catch(e){alert("فشل الرفع: "+(e.message||e))}await reload()};
+  var ma=$("madd");if(ma)ma.onclick=async function(){var t=$("mt").value.trim(),x=$("mx").value.trim(),L=tab==="locked";
+    if(!t||!x){alert("اكتب العنوان والرسالة");return}var at=L?new Date($("lt").value):null;if(L&&isNaN(at)){alert("اختار تاريخ ووقت الفتح");return}
+    try{if(L){var r=chk(await sb.from("locked").insert({title:t,at:at.toISOString()}).select().single());chk(await sb.from("locked_text").insert({id:r.data.id,body:x}))}
+      else chk(await sb.from("items").insert({kind:"msg",title:t,body:x}));toast("اتضافت ✓")}catch(e){alert("فشل الإضافة: "+(e.message||e))}await reload()}}
+</script>
+</body>
+</html>

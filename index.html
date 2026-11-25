@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>حكايتنا ❤️</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&family=Tajawal:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="bgl" id="bgl" aria-hidden="true"></div>
+<div id="app"></div>
+<div id="fx" aria-hidden="true"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<script src="common.js"></script>
+<script>
+var D,VT,GT,cur="home",typed=false,taps=0,bg=null,root=$("app"),busy=false;
+var PG=[["home","❤️ الرئيسية"],["messages","💌 رسائل"],["photos","📸 صور"],["videos","🎬 فيديوهات"],["music","🎵 موسيقى"],["counter","⏳ العداد"],["surprises","🎁 مفاجآت"]];
+
+fx();
+if(!ready)needSetup();else sb.auth.getSession().then(function(r){if(r.data.session)start(false);else gate()});
+
+/* صفحة كلمة السر */
+async function gate(){
+  root.innerHTML='<div class="center"><div class="box"><div class="em">🔒</div><h2>حكايتنا</h2><div class="words" id="gw"></div><input id="vp" type="password" aria-label="كلمة السر"><button class="btn" id="vb">ادخل</button><div class="err" id="ve"></div></div></div>';
+  var w=[];try{var r=await sb.from("settings").select("value").eq("key","words");w=JSON.parse(r.data[0].value)}catch(e){}
+  var el=$("gw"),i=0;if(w.length){el.textContent=w[0];GT=setInterval(function(){el.classList.add("out");setTimeout(function(){i=(i+1)%w.length;el.textContent=w[i];el.classList.remove("out")},800)},4500)}
+  async function go(){$("vb").disabled=true;var r=await sb.auth.signInWithPassword({email:CFG.viewerEmail,password:$("vp").value});$("vb").disabled=false;
+    if(r.error){$("ve").textContent="كلمة السر غلط، جرّب تاني ❤️";return}clearInterval(GT);start(true)}
+  $("vb").onclick=go;$("vp").onkeydown=function(e){if(e.key==="Enter")go()};$("vp").focus()}
+
+async function start(music){
+  try{D=await load()}catch(e){root.innerHTML='<div class="center"><div class="box"><h2>مش قادر أحمّل المحتوى</h2><p class="lead">اتأكد من الإنترنت ومن إعدادات Supabase.</p></div></div>';return}
+  if(D.songs[0]){bg=new Audio(D.songs[0].url);bg.loop=true;if(music)bg.play().catch(function(){})}
+  VT=setInterval(tick,1000);draw();typeIn();
+  /* التحديث التلقائي: أي تغيير من لوحة التحكم بيظهر هنا لوحده */
+  var q;function rf(){clearTimeout(q);q=setTimeout(refresh,600)}
+  var ch=sb.channel("live");["settings","items","locked"].forEach(function(t){ch.on("postgres_changes",{event:"*",schema:"public",table:t},rf)});ch.subscribe();
+  setInterval(refresh,60000)}
+function playing(){return Array.prototype.some.call(root.querySelectorAll("audio,video"),function(m){return!m.paused})}
+async function refresh(){if(busy)return;busy=true;try{var nd=await load();if(JSON.stringify(nd)!==JSON.stringify(D)){if(playing()){setTimeout(refresh,4000)}else{D=nd;draw()}}}catch(e){}busy=false}
+
+function empty(t){return'<p class="lead">'+t+'</p>'}
+function body(){
+  if(cur==="home")return'<div class="hero"><h1>حكايتنا</h1><div class="names">'+esc(D.name1)+' ❤️ '+esc(D.name2)+'</div><p class="intro" id="intro"></p><button class="heart" id="hb" aria-label="قلب سري">❤️</button><div id="sec"></div><div class="mini" id="mini"></div></div>';
+  if(cur==="messages")return'<h2>رسائل من القلب</h2><p class="lead">اضغط على أي رسالة عشان تفتحها.</p>'+(D.msgs.length?D.msgs.map(function(m){return'<details><summary>'+esc(m.title)+'</summary><p>'+esc(m.text)+'</p></details>'}).join(""):empty("لسه مفيش رسائل."));
+  if(cur==="photos")return'<h2>ألبوم ذكرياتنا</h2><p class="lead">اضغط على أي صورة عشان تكبرها.</p><div class="grid">'+D.photos.map(function(p,i){return'<div class="card drop" style="--r:'+((i%2?1:-1)*(1+(i*7%20)/10))+'deg;--d:'+(1.2+i*.15)+'s"><img src="'+esc(p.url)+'" alt="'+esc(p.cap)+'"><small>'+esc(p.cap)+'</small></div>'}).join("")+'</div>'+(D.photos.length?"":empty("لسه مفيش صور."));
+  if(cur==="videos")return'<h2>لحظاتنا بالفيديو</h2><p class="lead">فيديوهاتنا المميزة.</p><div class="grid vgrid">'+D.videos.map(function(v){return'<div class="card"><video controls preload="metadata" src="'+esc(v.url)+'"></video><small>'+esc(v.cap)+'</small></div>'}).join("")+'</div>'+(D.videos.length?"":empty("لسه مفيش فيديوهات."));
+  if(cur==="music")return'<h2>أغانينا</h2><p class="lead">كل أغنية معاها ذكرى.</p><ul class="songs">'+D.songs.map(function(s){return'<li><b><span class="disc">💿</span> '+esc(s.title)+'</b><span class="a">'+esc(s.artist)+'</span><audio controls preload="none" src="'+esc(s.url)+'"></audio></li>'}).join("")+'</ul>'+(D.songs.length?"":empty("لسه مفيش أغاني."));
+  if(cur==="counter")return'<h2>عداد الحب</h2><p class="lead">من أول يوم في حكايتنا لحد اللحظة دي.</p><div class="big" id="big"></div><div class="total" id="total"></div>';
+  var now=Date.now();
+  return'<h2>مفاجآت</h2><p class="lead">رسائل مخفية بتظهر في وقتها.</p>'+(D.locked.length?D.locked.map(function(m){
+    if(m.at>now)return'<div class="sur lock"><h3>🔒 '+esc(m.title)+'</h3><p>هتتفتح بعد <b class="cd" data-at="'+m.at+'"></b></p></div>';
+    return'<div class="sur"><h3>'+esc(m.title)+'</h3><p>'+(m.text==null?"جاري الفتح...":esc(m.text))+'</p></div>'}).join(""):empty("لسه مفيش مفاجآت."))}
+function draw(){
+  root.innerHTML='<div class="wrap"><div class="tabs">'+PG.map(function(p){return'<button data-p="'+p[0]+'"'+(p[0]===cur?' class="on"':"")+'>'+p[1]+'</button>'}).join("")+'</div><div class="page">'+body()+'</div></div>'+(bg?'<button class="mb" id="mb" aria-label="الموسيقى">🎵</button>':"");
+  root.querySelectorAll(".tabs button").forEach(function(b){b.onclick=function(){cur=b.dataset.p;draw();scrollTo(0,0);if(cur==="photos")rain();if(cur==="home")typeIn()}});
+  var mb=$("mb");if(mb)mb.onclick=function(){bg.paused?bg.play():bg.pause()};
+  var hb=$("hb");if(hb)hb.onclick=function(){taps++;$("sec").innerHTML=taps>=5?'<div class="secret">'+esc(D.secret)+'</div>':(taps>1?"كمان "+(5-taps)+"...":"")};
+  root.querySelectorAll(".card img").forEach(function(im){im.onclick=function(){var l=document.createElement("div");l.className="lb";l.innerHTML='<img alt="">';l.firstChild.src=im.src;l.onclick=function(){l.remove()};$("fx").appendChild(l)}});
+  root.querySelectorAll(".songs audio").forEach(function(a){var li=a.parentNode;a.onplay=function(){if(bg)bg.pause();li.classList.add("playing")};a.onpause=a.onended=function(){li.classList.remove("playing")}});
+  if(cur==="home"&&typed)$("intro").textContent=D.intro;
+  tick()}
+function typeIn(){var el=$("intro");if(!el)return;var t=D.intro||"";if(typed||reduce){el.textContent=t;typed=true;return}typed=true;var i=0;(function n(){var e=$("intro");if(!e)return;e.textContent=t.slice(0,++i);if(i<t.length)setTimeout(n,38)})()}
+function rain(){if(reduce||!D.photos.length)return;for(var i=0;i<18;i++){var e=document.createElement("div");e.className="fall";
+  e.style.cssText="left:"+Math.random()*88+"%;--t:"+(4+Math.random()*4)+"s;--d:"+Math.random()*2.5+"s;--dx:"+(Math.random()-.5)*160+"px;--r0:"+(Math.random()-.5)*50+"deg;--r1:"+(Math.random()-.5)*160+"deg";
+  e.innerHTML='<img alt="">';e.firstChild.src=D.photos[i%D.photos.length].url;$("fx").appendChild(e);(function(e){setTimeout(function(){e.remove()},9500)})(e)}}
+function tick(){if(!D)return;var x=Math.max(0,Date.now()-new Date(D.start).getTime()),u=[[Math.floor(x/864e5),"يوم"],[pad(Math.floor(x/36e5)%24),"ساعة"],[pad(Math.floor(x/6e4)%60),"دقيقة"],[pad(Math.floor(x/1e3)%60),"ثانية"]].map(function(a){return'<div><b>'+a[0]+'</b><span>'+a[1]+'</span></div>'}).join(""),e;
+  if(e=$("mini"))e.innerHTML=u;if(e=$("big"))e.innerHTML=u;if(e=$("total"))e.textContent="يعني "+Math.floor(x/36e5).toLocaleString("ar-EG")+" ساعة من الحب";
+  var ex=false;root.querySelectorAll(".cd").forEach(function(c){var l=+c.dataset.at-Date.now();if(l<=0)ex=true;else c.textContent=fmt(l)});
+  if(ex)refresh()}
+</script>
+</body>
+</html>

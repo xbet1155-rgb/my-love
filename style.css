@@ -1,0 +1,95 @@
+
+:root{--bg:#fff1f3;--bg2:#ffe0e8;--surface:#fff;--ink:#3b1224;--soft:#7a4a5c;--accent:#c2335a;--gold:#a8741a;--line:#f1c9d2;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--bg:#1f0a16;--bg2:#3a1230;--surface:#2e1222;--ink:#ffe8ec;--soft:#d9a9b7;--accent:#ff8fa8;--gold:#f2c879;--line:#4a2036;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;color:var(--ink);font:17px/1.8 "Tajawal",Tahoma,sans-serif;background:radial-gradient(ellipse at 15% 0%,color-mix(in srgb,var(--accent) 22%,transparent),transparent 55%),linear-gradient(120deg,var(--bg),var(--bg2),var(--bg));background-attachment:fixed}
+h1,h2,h3{font-family:"Aref Ruqaa",serif;margin:0;line-height:1.4}
+button,input,textarea{font:inherit;color:inherit}
+.bgl{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.bgl span{position:absolute;color:var(--accent);opacity:.1;filter:blur(3px);animation:floaty 14s ease-in-out infinite}
+#app{position:relative;z-index:2}
+#fx{position:fixed;inset:0;z-index:80;pointer-events:none;overflow:hidden}
+#fx .lb{pointer-events:auto}
+.wrap{max-width:900px;margin:0 auto;padding:12px 16px 90px}
+.lead{color:var(--soft);margin:0 0 18px}
+h2{font-size:38px;color:var(--accent)}
+h2::after{content:"";display:block;width:100px;height:3px;border-radius:3px;margin-top:4px;background:linear-gradient(90deg,var(--accent),var(--gold),transparent)}
+.tabs{position:sticky;top:8px;z-index:20;display:flex;gap:4px;overflow-x:auto;padding:8px 10px;margin:10px auto;width:max-content;max-width:100%;border-radius:99px;border:1px solid var(--line);background:color-mix(in srgb,var(--bg) 75%,transparent);backdrop-filter:blur(14px);box-shadow:0 8px 26px rgba(194,51,90,.16);scrollbar-width:none}
+.tabs button{flex:none;background:none;border:0;padding:6px 14px;border-radius:99px;color:var(--soft);cursor:pointer;font-weight:500;font-size:16px}
+.tabs button.on{background:linear-gradient(135deg,var(--accent),var(--gold));color:#fff}
+.btn{background:linear-gradient(135deg,var(--accent),var(--gold));color:#fff;border:0;border-radius:99px;padding:9px 26px;font-weight:700;cursor:pointer;box-shadow:0 6px 18px rgba(194,51,90,.35)}
+.btn.sm{padding:3px 12px;font-size:14px;box-shadow:none}
+.btn.ghost{background:var(--surface);color:var(--accent);border:1px solid var(--line)}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+input,textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);margin:4px 0}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px 18px;margin-bottom:14px;box-shadow:0 6px 18px rgba(194,51,90,.1)}
+.panel label{display:block;margin-top:8px;color:var(--soft);font-size:15px}
+.items{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
+.items.wide{grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
+.it{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px}
+.it img,.it video{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;display:block}
+.it video{aspect-ratio:16/10}.it audio{width:100%}
+.st{display:inline-block;padding:0 10px;border-radius:99px;font-size:13px;background:var(--bg2);color:var(--accent)}
+.center{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.box{text-align:center;max-width:380px;width:100%;background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:30px 24px;box-shadow:0 20px 60px rgba(194,51,90,.3);animation:enter .8s both}
+.box input{text-align:center;letter-spacing:3px}
+.em{font-size:48px;animation:beat 1.6s infinite}
+.err{min-height:28px;color:var(--accent);font-size:15px;margin-top:6px}
+.words{min-height:5.4em;display:flex;align-items:center;justify-content:center;font:25px/1.7 "Aref Ruqaa",serif;color:var(--accent);margin:4px 0 12px;transition:opacity .8s}
+.words.out{opacity:0}
+/* الموقع */
+.hero{text-align:center;padding:40px 0 10px;position:relative}
+.hero::before{content:"";position:absolute;inset:0 0 auto;height:320px;background:radial-gradient(closest-side,color-mix(in srgb,var(--accent) 36%,transparent),transparent);z-index:-1;animation:pulse 4s ease-in-out infinite}
+.hero h1{font-size:clamp(70px,20vw,140px);background:linear-gradient(90deg,var(--accent),var(--gold),var(--accent));background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 5s linear infinite}
+.names{font:30px "Aref Ruqaa",serif;color:var(--gold);margin:4px 0 16px}
+.intro{max-width:34ch;margin:0 auto 14px;color:var(--soft);min-height:3.6em}
+.heart{font-size:58px;background:none;border:0;cursor:pointer;animation:beat 1.6s infinite}
+.secret{margin:12px auto;max-width:36ch;padding:16px;border:1px dashed var(--accent);border-radius:14px;color:var(--accent);font:22px "Aref Ruqaa",serif;animation:enter .6s both}
+.mini{display:flex;justify-content:center;gap:12px;margin-top:18px;flex-wrap:wrap}
+.mini div{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:6px 14px;min-width:78px}
+.mini b{display:block;font-size:32px;color:var(--accent);line-height:1.2;font-variant-numeric:tabular-nums}.mini span{font-size:14px;color:var(--soft)}
+.page{animation:enter .7s both}
+details{background:var(--surface);border:1px solid var(--line);border-inline-start:5px solid var(--accent);border-radius:18px 18px 6px 18px;margin-bottom:12px;padding:4px 20px}
+summary{cursor:pointer;font:23px "Aref Ruqaa",serif;padding:10px 0}
+summary::before{content:"💌 "}details[open] summary::before{content:"💖 "}
+details p{margin:0 0 14px;color:var(--soft);white-space:pre-line}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px}
+.vgrid{grid-template-columns:repeat(auto-fill,minmax(270px,1fr))}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 8px 34px;position:relative;aspect-ratio:4/5;cursor:zoom-in;transform:rotate(var(--r,0deg));box-shadow:0 12px 30px rgba(194,51,90,.22);transition:transform .45s cubic-bezier(.3,1.4,.5,1)}
+.card:hover{transform:scale(1.07) translateY(-8px);z-index:3}
+.vgrid .card{aspect-ratio:16/11;cursor:default;transform:none}
+.card img,.card video{width:100%;height:100%;object-fit:cover;border-radius:6px;display:block}
+.card small{position:absolute;bottom:5px;inset-inline:0;text-align:center;font:17px "Aref Ruqaa",serif;color:var(--gold)}
+.drop{animation:drop 1.3s cubic-bezier(.3,1.5,.5,1) backwards;animation-delay:var(--d)}
+.fall{position:absolute;top:-200px;width:110px;background:#fff;padding:5px 5px 18px;border-radius:6px;box-shadow:0 6px 18px rgba(0,0,0,.3);animation:fall var(--t) linear forwards;animation-delay:var(--d)}
+.fall img{width:100%;height:110px;object-fit:cover;border-radius:3px;display:block}
+.songs{list-style:none;padding:0;margin:0}
+.songs li{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 18px;margin-bottom:10px}
+.songs li.playing{border-color:var(--accent)}.songs li.playing .disc{animation:spin 3s linear infinite}
+.disc{font-size:30px;display:inline-block}.songs span.a{display:block;color:var(--soft);font-size:15px}.songs audio{width:100%;margin-top:6px}
+.big{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:24px 0;text-align:center}
+.big div{background:linear-gradient(160deg,var(--surface),color-mix(in srgb,var(--accent) 10%,var(--surface)));border:1px solid var(--line);border-radius:16px;padding:18px 4px}
+.big b{display:block;font:700 clamp(32px,9vw,60px) "Aref Ruqaa",serif;color:var(--accent);line-height:1.2;font-variant-numeric:tabular-nums}
+.big span{color:var(--soft);font-size:15px}
+.total{text-align:center;font:28px "Aref Ruqaa",serif;color:var(--gold)}
+.sur{background:var(--surface);border:1px solid var(--line);border-inline-start:5px solid var(--gold);border-radius:18px;padding:14px 22px;margin-bottom:12px}
+.sur.lock{opacity:.7;border-style:dashed}.sur h3{font-size:24px}.sur p{margin:4px 0 0;color:var(--soft);white-space:pre-line}
+.cd{color:var(--accent);font-variant-numeric:tabular-nums}
+.lb{position:absolute;inset:0;background:rgba(15,3,9,.9);display:flex;align-items:center;justify-content:center;padding:20px;cursor:zoom-out}
+.lb img{max-width:100%;max-height:100%;border-radius:10px}
+.mb{position:fixed;bottom:16px;inset-inline-start:16px;z-index:30;width:48px;height:48px;border-radius:50%;border:1px solid var(--line);background:var(--surface);font-size:22px;cursor:pointer}
+.sp{position:absolute;font-style:normal;transform:translate(-50%,-50%);animation:sp .9s ease-out forwards}
+#pv{position:fixed;inset:0;z-index:60;overflow:auto;background:var(--bg)}
+@keyframes enter{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+@keyframes beat{0%,100%{transform:scale(1)}15%{transform:scale(1.2)}30%{transform:scale(1)}}
+@keyframes shine{to{background-position:-200% 0}}
+@keyframes pulse{50%{opacity:.55;transform:scale(1.08)}}
+@keyframes floaty{50%{transform:translateY(-40px) scale(1.12);opacity:.2}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes drop{from{opacity:0;transform:translateY(-90vh) rotate(-25deg)}to{opacity:1}}
+@keyframes fall{0%{transform:translate(0,0) rotate(var(--r0))}100%{transform:translate(var(--dx),125vh) rotate(var(--r1))}}
+@keyframes sp{to{opacity:0;transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(.5)}}
+@media (max-width:520px){.big{grid-template-columns:repeat(2,1fr)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+
+.toast{position:fixed;bottom:18px;inset-inline:0;margin:auto;width:max-content;max-width:90%;z-index:90;background:var(--accent);color:#fff;border-radius:99px;padding:6px 20px;font-size:15px;opacity:0;transition:opacity .3s;pointer-events:none}.toast.on{opacity:1}
